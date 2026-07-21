@@ -13,7 +13,7 @@ func cleanInput(text string) []string {
 
 type cliCommand struct {
 	// Do I need a name since this its the key in the map?
-	name        string
+	// name        string
 	description string
 	callback    func() error
 }
@@ -21,19 +21,20 @@ type cliCommand struct {
 func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"exit": {
-			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
 		},
 		"help": {
-			name:        "help",
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
 		"map": {
-			name:        "map",
 			description: "Displays the next 20 location areas",
-			callback:    commandHelp,
+			callback:    commandMap,
+		},
+		"mapb": {
+			description: "Displays the previous 20 location areas",
+			callback:    commandMapB,
 		},
 	}
 }
