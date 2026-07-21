@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/davidheeren/pokedexcli/internal/pokeapi"
 )
 
 func cleanInput(text string) []string {
@@ -15,7 +18,7 @@ type cliCommand struct {
 	// Do I need a name since this its the key in the map?
 	// name        string
 	description string
-	callback    func() error
+	callback    func(*config) error
 }
 
 func getCommands() map[string]cliCommand {
@@ -39,8 +42,19 @@ func getCommands() map[string]cliCommand {
 	}
 }
 
+type config struct {
+	client  pokeapi.Client
+	nextUrl string
+	prevUrl string
+}
+
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
+	cfg := &config{
+		client: pokeapi.NewClient(time.Second * 5),
+		nextUrl: pokeapi.MapUrl,
+		prevUrl: pokeapi.MapUrl,
+	}
 	for {
 		fmt.Print("Pokedex > ")
 		if !scanner.Scan() {
@@ -56,7 +70,7 @@ func startRepl() {
 			continue
 		}
 		if com, ok := getCommands()[args[0]]; ok {
-			err := com.callback()
+			err := com.callback(cfg)
 			if err != nil {
 				fmt.Printf("error: %s\n", err)
 				return

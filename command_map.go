@@ -1,86 +1,57 @@
 package main
 
 import (
-	"encoding/json"
-	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
-	"strconv"
-	"time"
+
+	"github.com/davidheeren/pokedexcli/internal/pokeapi"
 )
 
-type mapQuery struct {
-	Count    int           `json:"count"`
-	Next     string        `json:"next"`
-	Previous string        `json:"previous"`
-	Results  []mapLocation `json:"results"`
-}
-
-type mapLocation struct {
-	Name string `json:"name"`
-	Url  string `json:"url"`
-}
-
-var mapNextUrl string = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
-var mapPrevUrl string = "https://pokeapi.co/api/v2/location-area?offset=0&limit=20"
-
-func commandMap() error {
-	err := runMap(mapNextUrl)
-	return err
-}
-
-func commandMapB() error {
-	err := runMap(mapPrevUrl)
-	return err
-}
-
-func runMap(apiUrl string) error {
-	req, err := http.NewRequest("GET", apiUrl, nil) 
-	client := &http.Client {
-		Timeout: time.Millisecond * 5000,
-	}
-
-	// res, err := http.Get(apiUrl)
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	var query mapQuery
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&query)
+func commandMap(cfg *config) error {
+	locations, err := cfg.client.ListLocations(cfg.nextUrl)
 	if err != nil {
 		return err
 	}
 
-	offsetUrl, err := url.Parse(apiUrl)
+	pageNum, err := pokeapi.LocationsPageNumber(cfg.nextUrl)
 	if err != nil {
 		return err
 	}
 
-	offsetStr := offsetUrl.Query().Get("offset")
-	if offsetStr == "" {
-		return errors.New("url has no query prameter 'offset'")
+	fmt.Printf("----PAGE %d----\n", pageNum)
+	for _, l := range locations.Results {
+		fmt.Println(l)
 	}
 
-	offset, err := strconv.Atoi(offsetStr)
+	if locations.Next != "" {
+		cfg.nextUrl = locations.Next
+	}
+	if locations.Previous != "" {
+		cfg.prevUrl = locations.Previous
+	}
+	return nil
+}
+
+func commandMapB(cfg *config) error {
+	locations, err := cfg.client.ListLocations(cfg.prevUrl)
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("----PAGE %d----\n", offset/20+1)
-
-	for _, location := range query.Results {
-		fmt.Println(location.Name)
+	pageNum, err := pokeapi.LocationsPageNumber(cfg.prevUrl)
+	if err != nil {
+		return err
 	}
 
-	if query.Next != "" {
-		mapNextUrl = query.Next
+	fmt.Printf("----PAGE %d----\n", pageNum)
+	for _, l := range locations.Results {
+		fmt.Println(l)
 	}
-	if query.Previous != "" {
-		mapPrevUrl = query.Previous
+
+	if locations.Next != "" {
+		cfg.nextUrl = locations.Next
+	}
+	if locations.Previous != "" {
+		cfg.prevUrl = locations.Previous
 	}
 	return nil
 }
