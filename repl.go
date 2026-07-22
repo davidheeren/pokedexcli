@@ -43,7 +43,7 @@ func getCommands() map[string]cliCommand {
 }
 
 type config struct {
-	client  pokeapi.Client
+	client  *pokeapi.Client
 	nextUrl string
 	prevUrl string
 }
@@ -51,7 +51,7 @@ type config struct {
 func startRepl() {
 	scanner := bufio.NewScanner(os.Stdin)
 	cfg := &config{
-		client: pokeapi.NewClient(time.Second * 5),
+		client:  pokeapi.NewClient(time.Second * 5, time.Second * 15),
 		nextUrl: pokeapi.MapUrl,
 		prevUrl: pokeapi.MapUrl,
 	}

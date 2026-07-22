@@ -9,6 +9,16 @@ import (
 )
 
 func (c *Client) ListLocations(apiUrl string) (MapLocations, error) {
+	// Check if url in cache
+	if locationBytes, ok := c.cache.Get(apiUrl); ok {
+		var locations MapLocations
+		err := json.Unmarshal(locationBytes, &locations)
+		if err != nil {
+			return MapLocations{}, nil
+		}
+		return locations, nil
+	}
+
 	req, err := http.NewRequest("GET", apiUrl, nil)
 	if err != nil {
 		return MapLocations{}, err
@@ -26,6 +36,13 @@ func (c *Client) ListLocations(apiUrl string) (MapLocations, error) {
 	if err != nil {
 		return MapLocations{}, err
 	}
+
+	// Add location to cache
+	locationBytes, err := json.Marshal(&locations)
+	if err != nil {
+		return MapLocations{}, err
+	}
+	c.cache.Add(apiUrl, locationBytes)
 
 	return locations, nil
 }
