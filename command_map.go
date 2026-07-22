@@ -19,7 +19,7 @@ func commandMap(cfg *config) error {
 
 	fmt.Printf("----PAGE %d----\n", pageNum)
 	for _, l := range locations.Results {
-		fmt.Println(l)
+		fmt.Println(l.Name)
 	}
 
 	if locations.Next != "" {
@@ -44,7 +44,7 @@ func commandMapB(cfg *config) error {
 
 	fmt.Printf("----PAGE %d----\n", pageNum)
 	for _, l := range locations.Results {
-		fmt.Println(l)
+		fmt.Println(l.Name)
 	}
 
 	if locations.Next != "" {
